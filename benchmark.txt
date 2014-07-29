@@ -1,0 +1,119 @@
+Constant 0
+1 1
+0,0
+
+Identity
+1 1
+0,1
+
+NOT gate
+1 1
+1,0
+
+Constant 1
+1 1
+1,1
+
+Constant 0
+2 1
+0,0,0,0
+
+AND gate
+2 1
+0,0,0,1
+
+Non-implication
+2 1
+0,0,1,0
+
+Select X
+2 1
+0,0,1,1
+
+Reverse non-implication
+2 1
+0,1,0,0
+
+Select Y
+2 1
+0,1,0,1
+
+XOR gate
+2 1
+0,1,1,0
+
+OR gate
+2 1
+0,1,1,1
+
+NOR gate
+2 1
+1,0,0,0
+
+Equivalence
+2 1
+1,0,0,1
+
+Not Y
+2 1
+1,0,1,0
+
+Reverse implication
+2 1
+1,0,1,1
+
+Not X
+2 1
+1,1,0,0
+
+Implication
+2 1
+1,1,0,1
+
+NAND gate
+2 1
+1,1,1,0
+
+Constant 1
+2 1
+1,1,1,1
+
+OR and AND
+2 2
+00,10,10,11
+
+Half adder
+2 2
+00,01,01,10
+
+Full adder
+3 2
+00,01,01,10,01,10,10,11
+
+2-way multiplexer
+3 1
+0,1,0,1,0,0,1,1
+
+2-way demultiplexer
+2 2
+00,01,00,10
+
+4-way multiplexer
+6 1
+0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1
+
+4-way demultiplexer
+3 4
+0000,0001,0000,0010,0000,0100,0000,1000
+
+Prime checker
+4 1
+0,0,1,1,0,1,0,1,0,0,0,1,0,1,0,0
+
+4-bit parity checker
+4 1
+0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0
+
+Switch between 27 and 50
+1 6
+110110,010011

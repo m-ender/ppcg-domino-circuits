@@ -49,8 +49,8 @@ results.each_key do |user|
     scores = results[user]
     scores.delete_if {|idx, score| !max_scores.has_key? idx}
     scores.each_key do |idx| 
-        score = [scores[idx], 0].max
-        scores[idx] = 10000 * scores[idx] / max_scores[idx]
+        score = scores[idx]
+        scores[idx] = score < 0 ? 0 : 10000 * max_scores[idx] / score
     end
 end
 

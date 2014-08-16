@@ -42,22 +42,23 @@ solvers.each do |solver|
     solver_command = solver
 
     puts
-    puts "Solver by #{author}" unless author.empty?
+    puts "Testing solver by #{author}" unless author.empty?
     puts "Running '#{solver_command.join ' '}' against #{benchmark_file}"
+    puts "Selected circuits: #{selected_circuits}"
     puts
 
-    total_score = 0
-
-    puts ' No.       Size     Target   Score     Details'
-    puts '-'*85
+    results[author] = {}
 
     selected_circuits.each do |idx|
         name, spec = circuits[idx - 1].split("\n", 2)
 
+        puts if verbose
+
+        print "Solving circuit no. #{idx}: \"#{name}\"... "
+
         if verbose
             puts
-            puts "Starting circuit for #{name}. Circuit data:"
-            puts
+            puts 'Spec:'
             puts spec
             puts
         end
@@ -89,37 +90,46 @@ solvers.each do |solver|
         if error.empty?
             valid, error = circuit.validate(verbose)
             score = circuit.score if valid
-            total_score += score if valid
         else
             valid = false
         end
 
+        score = -1 unless valid
+
+        results[author][idx] = score
 
         if verbose
             puts
-            puts 'Result:'
         end
 
         if valid
-            puts "Circuit was solved with #{score} dominoes."
+            puts "Done."
         else
-            puts "Error on circuit #{name}: #{error}"
+            puts "Error: #{error}"
         end
     end
 
-    puts '-'*85
-    puts 'TOTAL SCORE: % 23.5f' % total_score
-    puts
-
-    results[author] = total_score
 end
 
-if solvers.length > 1
-    puts '          Score Board'
-    puts '  ============================'
-    puts
-    puts '   User                 Score'
-    puts '  ----------------------------'
-    results.each { |k,v| puts '  %-18s %9.5f' % [k, v] }
+cols = selected_circuits.map {|idx| (results.map {|k,v| v[idx].to_s.length} + [idx.to_s.length]).max + 2}
+
+c = -1
+headline = ' User           Track:' + selected_circuits.map {|idx| idx.to_s.rjust(cols[c+=1])}.join
+
+puts
+puts '  ' + '='*headline.length
+puts '   Score Board'
+puts '  ' + '='*headline.length
+puts
+puts '  ' + headline
+puts '  ' + '-'*headline.length
+results.each do |k,v| 
+    print '  %-22s' % k
+    c = -1
+    v.each do |idx,score|
+        print score.to_s.rjust(cols[c+=1])
+    end
     puts
 end
+puts '  ' + '-'*headline.length
+puts

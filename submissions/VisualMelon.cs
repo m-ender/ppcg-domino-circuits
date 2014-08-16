@@ -54,12 +54,6 @@ namespace dominoPrinter
 				a = aN;
 				b = bN;
 				size = a.size + b.size;
-				
-				/*rs = new bool[a.rs.Length];
-				for (int i = 0; i < rs.Length; i++)
-				{
-					rs[i] = go(a.rs[i], b.rs[i]);
-				}*/
 			}
 			
 			public bool buildCheckApply(nodev ntree)
@@ -316,122 +310,6 @@ namespace dominoPrinter
 			goto again;
 		}
 		
-		/*public static val resolve(int inputCount, bool[] ers)
-		{
-			List<List<val>> bvals = new List<List<val>>();
-			nodev ntree = new nodev();
-			
-			List<val> nvals = new List<val>();
-			
-			val tval = new baseVal(-1);
-			val fval = new baseVal(-2);
-			baseVal[] ivals = new baseVal[inputCount];
-			
-			for (int i = 0; i < inputCount; i++)
-			{
-				ivals[i] = new baseVal(i); // value will change anyway
-			}
-			
-			sortOutIVals(ivals, ers.Length);
-			
-			for (int i = 0; i < inputCount; i++)
-			{
-				nvals.Add(ivals[i]);
-			}
-			
-			tval.rs = new bool[ers.Length];
-			fval.rs = new bool[ers.Length];
-			for (int i = 0; i < ers.Length; i++)
-			{
-				tval.rs[i] = true;
-				fval.rs[i] = false;
-			}
-			
-			nvals.Add(tval);
-			nvals.Add(fval); // ifnot and or do nothing with falses
-			
-			bvals.Add(new List<val>());
-			
-			foreach (val v in nvals)
-			{
-				ntree.apply(v, 0);
-				if (!boolFlat(v.rs))
-					bvals[0].Add(v); // I trust these are distinct..
-			}
-			
-			Func<biopVal, bool> checkValb = (v) =>
-			{
-				if (!v.buildCheckApply(ntree))
-				{
-					return false;
-				}
-				bvals[v.size-1].Add(v);
-				return true;
-			};
-			
-			Action<biopVal, List<val>> checkVal = (v, li) =>
-			{
-				if (checkValb(v))
-					li.Add(v);
-			};
-			
-			int maxSize = 1;
-			
-		again:
-			// there is a reason this is separate... I'm sure there is....
-			foreach (val rv in nvals)
-			{
-				if (boolCompare(rv.rs, ers))
-					return rv; // thank Skeet!
-			}
-			
-			maxSize++;
-			bvals.Add(new List<val>()); // bvals[maxSize-1] always exists
-			
-			nvals.Clear();
-			long cc = 0;
-			
-			List<val> sbvals = bvals[maxSize - 2];
-			// NOTs have a habit of working out, get it checked first
-			for (int i = sbvals.Count - 1; i >= 0; i--)
-			{ // also known as nvals, but let's ignore that
-				val arv = sbvals[i];
-				checkVal(new ifnotVal(arv, tval), nvals);
-				cc += 1;
-			}
-			
-			for (int s = 1; s < maxSize; s++)
-			{
-				List<val> abvals = bvals[s - 1];
-				int t = maxSize - s;
-				if (t < s)
-					break;
-				List<val> bbvals = bvals[t - 1];
-				
-				for (int i = abvals.Count - 1; i >= 0; i--)
-				{
-					val arv = abvals[i];
-					
-					int jt = t == s ? i : bbvals.Count - 1;
-					for (int j = jt; j >= 0; j--)
-					{
-						val brv = bbvals[j];
-						
-						checkVal(new ifnotVal(brv, arv), nvals);
-						checkVal(new ifnotVal(arv, brv), nvals);
-						checkVal(new orval(brv, arv), nvals); // don't technically need ors, but they are good fun
-						cc += 3;
-					}
-				}
-			}
-			
-			int bc = 0;
-			foreach (List<val> bv in bvals)
-				bc += bv.Count;
-			Console.Error.WriteLine(nvals.Count + " - " + bc + " - " + cc);
-			goto again;
-		}*/
-		
 		public static val resolveBoooooooring(int inputCount, int c, int o)
 		{
 			val tval = new baseVal(-1);
@@ -653,24 +531,7 @@ namespace dominoPrinter
 		}
 		
 		public static val[] resolveValsBoooring(int inputCount, int outputCount, string erStr)
-		{
-			/*int c = 1;
-			for (int i = 0; i < inputCount; i++)
-			{
-				c *= 2;
-			}
-			
-			val[] bvals;// = new val[c];
-			bool[][] erss = new bool[c][];
-			
-			for (int i = 0; i < c; i++)
-			{
-				bool[] ers = new bool[c];
-				ers[i] = true;
-				erss[i] = ers;
-			}
-			bvals = resolve(inputCount, c, erss);*/
-			
+		{	
 			// boring
 			
 			int c = 1;
@@ -702,7 +563,7 @@ namespace dominoPrinter
 		
 		public static val[] resolveVals(int inputCount, int outputCount, string erStr)
 		{
-			val[] res;// = new val[outputCount];
+			val[] res;
 			
 			string[] data = erStr.Split(',');
 			bool[][] erss = new bool[outputCount][];
@@ -831,8 +692,6 @@ namespace dominoPrinter
 					
 					if (i == 0)
 					{
-//						for (int jx = x + 1; jx < ex; jx++)
-//							map[y,jx] = vnode.flatVN;
 						fillOutMap(map, rn.children[i], y, x + 1);
 					}
 					
@@ -888,6 +747,27 @@ namespace dominoPrinter
 				tis.Add(-2);
 			next:
 				continue;
+			}
+			
+			// I do not like this piece of code, it can be replaced further down for the better if you get round to thinking about it
+			// add unused Is
+			for (int z = 0; z < inputCount; z++)
+			{
+				if (!tis.Contains(z))
+				{
+					int midx = tis.IndexOf(-2);
+					if (midx != -1)
+					{
+						tis[midx] = z;
+						//System.Console.Error.WriteLine("swap in " + z);
+					}
+					else
+					{
+						tis.Add(z);
+						//System.Console.Error.WriteLine("add on " + z);
+						map[map.h-1,map.w] = vnode.flatVN;
+					}
+				}
 			}
 			
 			int curX = map.h;
@@ -1019,12 +899,14 @@ namespace dominoPrinter
 				}
 			}
 			
+			/* moved UP
 			// add extra unused Is per spec
 			for (;eyeCount < inputCount; eyeCount++)
 			{
 				ly++;
 				map[ly, curX] = vnode.inputVN;
 			}
+			*/
 			
 			// step three - clean up if we can
 			// push back _  esq things to  _

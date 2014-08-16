@@ -58,7 +58,10 @@ class Circuit
     end
 
     def validate(verbose)
-        puts @setup if verbose
+        if verbose
+            puts 'Solution:'
+            puts @setup 
+        end
         raw_setup = @setup
 
         @setup = @setup.split("\n")

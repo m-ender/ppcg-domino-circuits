@@ -91,6 +91,12 @@ class Circuit
             return false, "Wrong number of outputs. Should be #{@n}, was #{n}."
         end
 
+        if @w*@h > 8000000
+            return false, "Solution too large. Must not exceed 8 million cells, has #{@w*@h}."
+        elsif score > 1000000
+            return false, "Too many dominoes. Must not use more than 1 million, has #{score}."
+        end                
+
         @f.each do |i,o|
             result = compute(i)
             return false, "Wrong result for input #{i}. Should be #{o}, was #{result}." if result != o
@@ -175,8 +181,8 @@ class Circuit
     end
 
     def score
-        # Count all non-space characters except in the top row 
-        # and first and last columns.
-        @setup[1..-1].map{|line| line[1..-2]}.join.count('^ ')
+        # Count all non-space characters including the power line 
+        # and input and output column.
+        @score ||= @setup.join.count('^ ')
     end
 end

@@ -35,6 +35,27 @@ selected_circuits ||= (1..circuits.size)
 
 results = {}
 
+# Read previous results if file exists
+if File::exists?('raw_scores.txt')
+    File.open('raw_scores.txt', 'r') do |file|
+        existing_columns = file.gets.split[1..-1].map(&:to_i)
+        
+        file.each_line do |line|
+            user, *scores = line.split
+            scores.map!(&:to_i)
+
+            user_scores = {}
+
+            scores.each_index do |i|
+                score = scores[i]
+                user_scores[existing_columns[i]] = score if score > -2
+            end
+
+            results[user] = user_scores
+        end
+    end
+end
+
 solvers.each do |solver|
 
     author = solver.shift
@@ -47,7 +68,7 @@ solvers.each do |solver|
     puts "Selected circuits: #{selected_circuits}"
     puts
 
-    results[author] = {}
+    results[author] ||= {}
 
     selected_circuits.each do |idx|
         name, spec = circuits[idx - 1].split("\n", 2)
@@ -108,13 +129,12 @@ solvers.each do |solver|
             puts "Error: #{error}"
         end
     end
-
 end
 
 cols = selected_circuits.map {|idx| (results.map {|k,v| v[idx].to_s.length} + [idx.to_s.length]).max + 2}
 
 c = -1
-headline = ' User           Track:' + selected_circuits.map {|idx| idx.to_s.rjust(cols[c+=1])}.join
+headline = ' Author         Track:' + selected_circuits.map {|idx| idx.to_s.rjust(cols[c+=1])}.join
 
 puts
 puts '  ' + '='*headline.length
@@ -123,13 +143,30 @@ puts '  ' + '='*headline.length
 puts
 puts '  ' + headline
 puts '  ' + '-'*headline.length
-results.each do |k,v| 
-    print '  %-22s' % k
+results.each do |author, scores| 
+    print '  %-22s' % author
     c = -1
-    v.each do |idx,score|
-        print score.to_s.rjust(cols[c+=1])
+    scores.each do |idx, score|
+        print score.to_s.rjust(cols[c+=1]) if selected_circuits.include?(idx)
     end
     puts
 end
 puts '  ' + '-'*headline.length
+puts
+print 'Writing raw_scores.txt... '
+
+File::open('raw_scores.txt', 'w') do |file|
+    file.write('Author' + ' '*14)
+    (1..circuits.size).each {|idx| file.write(idx.to_s.rjust(8))}
+    file.puts
+    results.each do |author, scores|
+        file.write('%-20s' % author)
+        (1..circuits.size).each do |idx|
+            file.write((scores[idx] || -2).to_s.rjust(8))
+        end
+        file.puts
+    end
+end
+
+puts 'Done'
 puts

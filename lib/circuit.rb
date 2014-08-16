@@ -83,10 +83,14 @@ class Circuit
 
         if char = tr_setup[0][1..-1][/[^ |]/]
             return false, "Invalid character in input column: #{char}"
+        elsif tr_setup[0][1] != ' '
+            return false, "There must be a gap between power line and first input."
         elsif (m = tr_setup[0].count('|')) != @m
             return false, "Wrong number of inputs. Should be #{@m}, was #{m}."
         elsif char = tr_setup[-1][1..-1][/[^ |]/]
             return false, "Invalid character in output column: #{char}"
+        elsif tr_setup[-1][1] != ' '
+            return false, "There must be a gap between power line and first output."
         elsif (n = tr_setup[-1].count('|')) != @n
             return false, "Wrong number of outputs. Should be #{@n}, was #{n}."
         end

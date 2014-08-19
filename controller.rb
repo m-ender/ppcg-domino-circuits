@@ -141,7 +141,7 @@ headline = ' Author         Track:' + selected_circuits.map {|idx| idx.to_s.rjus
 
 puts
 puts '  ' + '='*headline.length
-puts '   Raw Score Board'
+puts '   Raw Scoreboard'
 puts '  ' + '='*headline.length
 puts
 puts '  ' + headline

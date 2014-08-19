@@ -137,7 +137,7 @@ end
 cols = selected_circuits.map {|idx| (results.map {|k,v| v[idx].to_s.length} + [idx.to_s.length]).max + 2}
 
 c = -1
-headline = ' Author         Track:' + selected_circuits.map {|idx| idx.to_s.rjust(cols[c+=1])}.join
+headline = ' Author       Circuit:' + selected_circuits.map {|idx| idx.to_s.rjust(cols[c+=1])}.join
 
 puts
 puts '  ' + '='*headline.length

@@ -67,7 +67,16 @@ class Circuit
         @setup = @setup.split("\n")
         @h = @setup.length
         @w = @setup[0].length
+
+        if @w*@h > 8000000
+            return false, "B|Solution too large. Must not exceed 8 million cells, has #{@w*@h}."
+        end
+
         @setup[1..-1].map! {|line| line.ljust(@w) }
+
+        if score > 1000000
+            return false, "B|Too many dominoes. Must not use more than 1 million, has #{score}."
+        end
 
         if char = raw_setup[/[^\n \\\/|-]/]
             return false, "I|Invalid character in setup: #{char}"
@@ -94,12 +103,6 @@ class Circuit
         elsif (n = tr_setup[-1].count('|')) != @n
             return false, "I|Wrong number of outputs. Should be #{@n}, was #{n}."
         end
-
-        if @w*@h > 8000000
-            return false, "B|Solution too large. Must not exceed 8 million cells, has #{@w*@h}."
-        elsif score > 1000000
-            return false, "B|Too many dominoes. Must not use more than 1 million, has #{score}."
-        end                
 
         @f.each do |i,o|
             result = compute(i)

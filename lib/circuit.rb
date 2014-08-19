@@ -70,40 +70,40 @@ class Circuit
         @setup[1..-1].map! {|line| line.ljust(@w) }
 
         if char = raw_setup[/[^\n \\\/|-]/]
-            return false, "Invalid character in setup: #{char}"
+            return false, "I|Invalid character in setup: #{char}"
         elsif char = @setup[0][/[^\/]/]
-            return false, "Invalid character in power line: #{char}"
+            return false, "I|Invalid character in power line: #{char}"
         end
 
         begin
             tr_setup = @setup.map(&:chars).transpose.map(&:join)
         rescue IndexError
-            return false, "Power line is too short."
+            return false, "I|Power line is too short."
         end
 
         if char = tr_setup[0][1..-1][/[^ |]/]
-            return false, "Invalid character in input column: #{char}"
+            return false, "I|Invalid character in input column: #{char}"
         elsif tr_setup[0][1] != ' '
-            return false, "There must be a gap between power line and first input."
+            return false, "I|There must be a gap between power line and first input."
         elsif (m = tr_setup[0].count('|')) != @m
-            return false, "Wrong number of inputs. Should be #{@m}, was #{m}."
+            return false, "I|Wrong number of inputs. Should be #{@m}, was #{m}."
         elsif char = tr_setup[-1][1..-1][/[^ |]/]
-            return false, "Invalid character in output column: #{char}"
+            return false, "I|Invalid character in output column: #{char}"
         elsif tr_setup[-1][1] != ' '
-            return false, "There must be a gap between power line and first output."
+            return false, "I|There must be a gap between power line and first output."
         elsif (n = tr_setup[-1].count('|')) != @n
-            return false, "Wrong number of outputs. Should be #{@n}, was #{n}."
+            return false, "I|Wrong number of outputs. Should be #{@n}, was #{n}."
         end
 
         if @w*@h > 8000000
-            return false, "Solution too large. Must not exceed 8 million cells, has #{@w*@h}."
+            return false, "B|Solution too large. Must not exceed 8 million cells, has #{@w*@h}."
         elsif score > 1000000
-            return false, "Too many dominoes. Must not use more than 1 million, has #{score}."
+            return false, "B|Too many dominoes. Must not use more than 1 million, has #{score}."
         end                
 
         @f.each do |i,o|
             result = compute(i)
-            return false, "Wrong result for input #{i}. Should be #{o}, was #{result}." if result != o
+            return false, "W|Wrong result for input #{i}. Should be #{o}, was #{result}." if result != o
         end
 
         return true

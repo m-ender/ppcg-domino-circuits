@@ -34,6 +34,7 @@ circuits = File.open(benchmark_file).read.split("\n\n")
 selected_circuits ||= (1..circuits.size)
 
 results = {}
+errors = {}
 
 # Read previous results if file exists
 if File::exists?('raw_scores.txt')
@@ -69,6 +70,7 @@ solvers.each do |solver|
     puts
 
     results[author] ||= {}
+    errors[author] ||= {}
 
     selected_circuits.each do |idx|
         name, spec = circuits[idx - 1].split("\n", 2)
@@ -95,7 +97,7 @@ solvers.each do |solver|
                 circuit.setup = solver.read
             end
         rescue Timeout::Error => e
-            error = 'Solver exceeded time limit.'
+            error = 'T|Solver exceeded time limit.'
 
             # Kill the process manually, otherwise we might have to
             # wait for it to finish before closing.
@@ -103,7 +105,7 @@ solvers.each do |solver|
         rescue Exception => e
             $stderr.puts e.message
             $stderr.puts e.backtrace.inspect
-            error = 'Controller raised exception.'
+            error = 'E|Controller raised exception.'
         end
 
         solver.close
@@ -126,7 +128,8 @@ solvers.each do |solver|
         if valid
             puts "Done."
         else
-            puts "Error: #{error}"
+            errors[author][idx] = error.split('|')[0] + '!'
+            puts "Error: #{error.split('|')[1]}"
         end
     end
 end
@@ -147,11 +150,17 @@ results.each do |author, scores|
     print '  %-22s' % author
     c = -1
     scores.each do |idx, score|
-        print score.to_s.rjust(cols[c+=1]) if selected_circuits.include?(idx)
+        print (score < 0 ? errors[author][idx] : score).to_s.rjust(cols[c+=1]) if selected_circuits.include?(idx)
     end
     puts
 end
 puts '  ' + '-'*headline.length
+puts
+puts '  Legend:'
+puts '    I - invalid circuit'
+puts '    B - circuit too big'
+puts '    W - circuit computes wrong function'
+puts '    T - exceeded time limit'
 puts
 print 'Writing raw_scores.txt... '
 

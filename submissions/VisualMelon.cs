@@ -5,6 +5,14 @@ namespace dominoPrinter
 {
  class Program
  {
+  static string bstring(bool[] barr)
+  {
+   string str = "";
+   foreach (bool b in barr)
+    str += b?1:0;
+   return str;
+  }
+
   public static void Main(string[] args)
   {
 
@@ -168,6 +176,7 @@ namespace dominoPrinter
 
   // solver
 
+  // these is something VERY WRONG with the naming in this code
   public class nodev
   {
    public static nodev full = new nodev();
@@ -316,44 +325,7 @@ namespace dominoPrinter
    goto again;
   }
 
-  public static val resolveBoooooooring(int inputCount, int c, int o)
-  {
-   val tval = new baseVal(-1);
-   val fval = new baseVal(-2);
-   tval.rs = new bool[c];
-   fval.rs = new bool[c];
-   for (int i = 0; i < c; i++)
-   {
-    tval.rs[i] = true;
-    fval.rs[i] = false;
-   }
-
-   val res = tval;
-
-   baseVal[] ivals = new baseVal[inputCount];
-
-   for (int i = 0; i < inputCount; i++)
-   {
-    ivals[i] = new baseVal(i); // value will change anyway
-   }
-
-   sortOutIVals(ivals, c);
-
-   for (int i = 0; i < ivals.Length; i++)
-   {
-    val cur = ivals[i];
-    if (cur.rs[o])
-    {
-     cur = new ifnotVal(cur, tval);
-    }
-
-    res = new ifnotVal(cur, res); // don't forget to try putting the not in before this for fun/evidence sake
-   }
-
-   return res;
-  }
-
-  public static val[] resolve(int inputCount, int c, bool[][] erss)
+  public static val[] resolve(int inputCount, int c, bool[][] erss, out baseVal[] inputs)
   {
    val[] res = new val[erss.Length];
 
@@ -362,14 +334,18 @@ namespace dominoPrinter
 
    List<val> nvals = new List<val>();
 
-   val tval = new baseVal(-1);
-   val fval = new baseVal(-2);
+   baseVal tval = new baseVal(-1);
+   baseVal fval = new baseVal(-2);
    baseVal[] ivals = new baseVal[inputCount];
+   inputs = new baseVal[inputCount + 2];
 
    for (int i = 0; i < inputCount; i++)
    {
     ivals[i] = new baseVal(i); // value will change anyway
+    inputs[i] = ivals[i];
    }
+   inputs[inputCount] = fval;
+   inputs[inputCount + 1] = tval;
 
    sortOutIVals(ivals, c);
 
@@ -486,20 +462,7 @@ namespace dominoPrinter
    int bc = 0;
    foreach (List<val> bv in bvals)
     bc += bv.Count;
-   //Console.Error.WriteLine(nvals.Count + " - " + bc + " - " + cc);
    goto again;
-  }
-
-  public static val[] resolveVals(string cStr, string erStr, out int inputCount)
-  {
-   string[] data = cStr.Split(' ');
-   int ic = int.Parse(data[0]);
-   int oc = int.Parse(data[1]);
-   inputCount = ic;
-   if (inputCount < 5)
-    return resolveVals(ic, oc, erStr);
-   else
-    return resolveValsBoooring(ic, oc, erStr);
   }
 
   public static val[] resolveVals(string mStr, string nStr, string erStr, out int inputCount)
@@ -507,52 +470,69 @@ namespace dominoPrinter
    int ic = int.Parse(mStr);
    int oc = int.Parse(nStr);
    inputCount = ic;
-   if (inputCount <= 4)
+   int bruteBase = 3;
+   if (inputCount <= bruteBase)
     return resolveVals(ic, oc, erStr);
    else
-    return resolveValsBoooring(ic, oc, erStr);
+    return resolveValFours(bruteBase, ic, oc, erStr);
   }
 
-  public static val resolveByOrViolence(val[] bvals, int c, bool[] ers)
+  public static val joinVals(val low, val high, baseVal inp, baseVal tval, baseVal fval)
   {
-   val cur = new baseVal(-2);
-   bool iszero = true;
-   cur.rs = new bool[c]; // let be falses
+   val lowCut = low == fval ? (val)fval : low == tval ? (val)new ifnotVal(inp, tval) : (val)new ifnotVal(inp, low);
 
-   for (int i = c - 1; i >= 0; i--)
+   val highCut = high == fval ? (val)fval : high == tval ? (val)inp : (val)new ifnotVal(new ifnotVal(inp, tval), high);
+
+   if (highCut == fval)
+    return lowCut;
+   if (lowCut == fval)
+    return highCut;
+   return new orval(highCut, lowCut);
+  }
+
+  public static val resolveValFour(int n, int m, int inputCount, bool[] ers)
+  {
+   // solves fours
+   int fc = ers.Length / m;
+   bool[][] fours = new bool[fc][];
+
+   for (int i = 0; i < fc; i++)
    {
-    if (ers[i])
+    fours[i] = new bool[m];
+    for (int j = 0; j < m; j++)
     {
-     if (iszero)
-     {
-      iszero = false;
-      cur = bvals[i];
-     }
-     else
-      cur = new orval(cur, bvals[i]);
+     fours[i][j] = ers[i*m+j];
     }
    }
 
-   return cur;
+   baseVal[] inputs;
+   val[] fres = resolve(n, m, fours, out inputs);
+   baseVal tval = inputs[inputs.Length - 1];
+   baseVal fval = inputs[inputs.Length - 2];
+
+   for (int i = 0; i < n; i++)
+   {
+    inputs[i].id += inputCount - n;
+   }
+
+   // assemble
+   for (int i = 0, c = 1; c < fc; c *= 2, i++)
+   {
+    for (int j = 0; j + c < fc; j += c * 2)
+    {
+     fres[j] = joinVals(fres[j], fres[j+c], new baseVal((inputCount - n - 1) - i), tval, fval);
+    }
+   }
+
+   return fres[0];
   }
 
-  public static val[] resolveValsBoooring(int inputCount, int outputCount, string erStr)
-  { 
-   // boring
+  public static val[] resolveValFours(int n, int inputCount, int outputCount, string erStr)
+  {
+   int m = 1;
+   for (int i = 0; i < n; i++)
+    m *= 2;
 
-   int c = 1;
-   for (int i = 0; i < inputCount; i++)
-   {
-    c *= 2;
-   }
-
-   val[] bvals = new val[c];
-   for (int i = 0; i < c; i++)
-   {
-    bvals[i] = resolveBoooooooring(inputCount, c, i);
-   }
-
-   // boring
    val[] res = new val[outputCount];
 
    string[] data = erStr.Split(',');
@@ -561,7 +541,7 @@ namespace dominoPrinter
     bool[] ers = new bool[data.Length];
     for (int j = 0; j < data.Length; j++)
      ers[j] = data[j][i] == '1';
-    res[i] = resolveByOrViolence(bvals, c, ers);
+    res[i] = resolveValFour(n, m, inputCount, ers);
    }
 
    return res;
@@ -581,7 +561,8 @@ namespace dominoPrinter
     erss[i] = ers;
    }
 
-   res = resolve(inputCount, data.Length, erss);
+   baseVal[] inputs; // no need
+   res = resolve(inputCount, data.Length, erss, out inputs);
 
    return res;
   }
@@ -765,13 +746,11 @@ namespace dominoPrinter
      if (midx != -1)
      {
       tis[midx] = z;
-      //System.Console.Error.WriteLine("swap in " + z + " at " + midx + "," + (map.h-1));
       map[midx,map.h-1] = vnode.noVN;
      }
      else
      {
       tis.Add(z);
-      //System.Console.Error.WriteLine("add on " + z + " at " + map.w + "," + (map.h-1));
       map[map.w,map.h-1] = vnode.noVN;
      }
     }
@@ -947,19 +926,19 @@ namespace dominoPrinter
   }
 
   // printer
-  static string up1 =    @"      /     /     /     /";
-  static string input =   @"                    |||||";
-  static string output =   @"                    |    ";
-  static string flat =   @"            |/  \  /|\   ";
-  static string splitDown =   @"|//   / /\  |\/    /     ";
-  static string splitUp =   @"         \  |/\ \ \/|\\  ";
-  static string moveDown =   @"|//     /     /    /     ";
-  static string moveUp =    @"         \    \   \ |\\  ";
-  static string swap =    @"|/  |  /\   /\   \/ |\  |";
-  static string orDown =    @"|/    /     |/  \  /|\   ";
-  static string orUp =    @"|/    /  \  |\  \   |\   ";
-  static string ifnotDown =   @"|/     /     -   \/ |\  |";
-  static string ifnotUp =    @"|/  |  /\    -   \  |\   ";
+  static string up1 = @"      /     /     /     /";
+  static string input = @"                    |||||";
+  static string output = @"                    |    ";
+  static string flat = @"            |/  \  /|\   ";
+  static string splitDown = @"|//   / /\  |\/    /     ";
+  static string splitUp = @"         \  |/\ \ \/|\\  ";
+  static string moveDown = @"|//     /     /    /     ";
+  static string moveUp = @"         \    \   \ |\\  ";
+  static string swap = @"|/  |  /\   /\   \/ |\  |";
+  static string orDown = @"|/    /     |/  \  /|\   ";
+  static string orUp = @"|/    /  \  |\  \   |\   ";
+  static string ifnotDown = @"|/     /     -   \/ |\  |";
+  static string ifnotUp = @"|/  |  /\    -   \  |\   ";
 
   public static void printDominoes(System.IO.TextReader reader, System.IO.TextWriter writer, bool moreverbosemaybe)
   {

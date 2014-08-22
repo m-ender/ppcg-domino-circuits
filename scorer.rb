@@ -35,26 +35,26 @@ File.open(file_name, 'r') do |file|
     end
 end
 
-max_scores = {}
+min_scores = {}
 existing_columns.each do |idx|
-    max = results.map {|author, scores| scores[idx]}.max
-    if max < 0
+    min = results.map {|author, scores| scores[idx]}.min
+    if min < 0
         puts "Warning: Circuit no. #{idx} unsolved and will be omitted from results."
     else
-        max_scores[idx] = max
+        min_scores[idx] = min
     end
 end
 
 results.each_key do |user|
     scores = results[user]
-    scores.delete_if {|idx, score| !max_scores.has_key? idx}
+    scores.delete_if {|idx, score| !min_scores.has_key? idx}
     scores.each_key do |idx| 
         score = scores[idx]
-        scores[idx] = score < 0 ? 0 : 10000 * max_scores[idx] / score
+        scores[idx] = score < 0 ? 0 : 10000 * min_scores[idx] / score
     end
 end
 
-headline = ' Author         Track:' + max_scores.keys.map {|idx| idx.to_s.rjust(6)}.join + '  Total'
+headline = ' Author         Track:' + min_scores.keys.map {|idx| idx.to_s.rjust(6)}.join + '  Total'
 puts
 puts '  ' + '='*headline.length
 puts '   Score Board'

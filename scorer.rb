@@ -37,8 +37,8 @@ end
 
 min_scores = {}
 existing_columns.each do |idx|
-    min = results.map {|author, scores| scores[idx]}.min
-    if min < 0
+    min = results.map {|author, scores| scores[idx] < 0 ? 1000001 : scores[idx]}.min
+    if min > 1000000
         puts "Warning: Circuit no. #{idx} unsolved and will be omitted from results."
     else
         min_scores[idx] = min
